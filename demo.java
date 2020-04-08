@@ -1,9 +1,10 @@
+// Output a fixed-frequency sine wave.
+// Demo by WolinLabs.
 // http://www.wolinlabs.com/blog/java.sine.wave.html
 
 import java.nio.ByteBuffer;
 import javax.sound.sampled.*;
 
-// Output a fixed-frequency sine wave.
 public class demo {
 
    //This is just an example -
