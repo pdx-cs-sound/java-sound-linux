@@ -40,10 +40,11 @@ Bart Massey 2020-04-07
 
     * OpenJDK: Should just work — no magic necessary.
 
-* Compile and run your java code. A sine wave demo is here.
+* Compile and run your java code. A sine wave player demo is
+  here.
 
-        javac demo.java
-        java demo
+        javac playsine.java
+        java playsine
 
 ## Acknowledgments
 
