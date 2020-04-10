@@ -52,6 +52,9 @@ Bart Massey 2020-04-07
         javac writesine.java
         java writesine sine.wav
 
+  These examples have been run with Oracle Java 8 and
+  OpenJDK 11.
+
 ## Acknowledgments
 
 Thanks to the authors of Tritonus and the Java PulseAudio

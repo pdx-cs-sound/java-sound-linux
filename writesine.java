@@ -1,93 +1,49 @@
 // Output a fixed-frequency sine wave to a WAVE file.
 // Adapted from demo by WolinLabs
-// http://www.wolinlabs.com/blog/java.sine.wave.html
+//   http://www.wolinlabs.com/blog/java.sine.wave.html
 // and demo from ProgramCreek
-// https://www.programcreek.com/java-api-examples/?
-//   code=AdoptOpenJDK/openjdk-jdk10/openjdk-jdk10-master/jdk/test/
-//   javax/sound/sampled/spi/AudioFileWriter/AiffSampleRate.java
+//   https://www.programcreek.com/java-api-examples/?
+//     code=AdoptOpenJDK/openjdk-jdk10/openjdk-jdk10-master/jdk/test/
+//     javax/sound/sampled/spi/AudioFileWriter/AiffSampleRate.java
 
+import java.io.*;
 import java.nio.ByteBuffer;
 import javax.sound.sampled.*;
 
 public class writesine {
 
-   public static void main(String[] args)
-       throws InterruptedException, LineUnavailableException 
-   {
-       
-      final int SAMPLING_RATE = 44100;  // Audio sampling rate.
-      final int SAMPLE_SIZE = 2; // Audio sample size in bytes.
+    public static void main(String[] args)
+        throws IOException, LineUnavailableException
+    {
 
-      SourceDataLine line;
-      double fFreq = 440; // Frequency of sine wave in hz.
+        final int SAMPLING_RATE = 44100;  // Audio sampling rate.
+        final int SAMPLE_SIZE = 2; // Audio sample size in bytes.
+        // Number of seconds as samples.
+        final int NSAMPLES = 5 * SAMPLING_RATE; 
 
-      // Position through the sine wave as a percentage
-      // (i.e. 0 to 1 is 0 to 2*PI).
-      double fCyclePosition = 0;        
+        double fFreq = 440; // Frequency of sine wave in hz.
 
-      // Open up audio output, using 44100hz sampling rate,
-      // 16 bit samples, mono, and big endian byte ordering.
-      AudioFormat format = new AudioFormat(SAMPLING_RATE, 16, 1, true, true);
-      DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
+        // Create a sample buffer.
+        ByteBuffer cBuf = ByteBuffer.allocate(2 * NSAMPLES);
+        for (int i=0; i < NSAMPLES; i++) {
+            double t = 2 * Math.PI * fFreq * i / SAMPLING_RATE;
+            cBuf.putShort((short) ((Short.MAX_VALUE - 1) * Math.sin(t)));
+        }
+        ByteArrayInputStream buf = new ByteArrayInputStream(cBuf.array());
 
-      if (!AudioSystem.isLineSupported(info)){
-         System.out.println("Line matching " + info + " is not supported.");
-         throw new LineUnavailableException();
-      }
+        // Open up audio output, using given sampling rate,
+        // 16 bit samples, mono, and big-endian byte ordering
+        // (because Java's ByteBuffer is big-endian).
+        AudioFormat sample_format = new AudioFormat(
+            AudioFormat.Encoding.PCM_SIGNED,
+            SAMPLING_RATE, 8 * SAMPLE_SIZE, 1,
+            SAMPLE_SIZE, SAMPLING_RATE, true
+        );
+        AudioInputStream aBuf =
+            new AudioInputStream(buf, sample_format, NSAMPLES);
 
-      line = (SourceDataLine)AudioSystem.getLine(info);
-      line.open(format);  
-      line.start();
-
-      // Make our buffer size match audio system's buffer.
-      ByteBuffer cBuf = ByteBuffer.allocate(line.getBufferSize());   
-
-      int ctSamplesTotal = SAMPLING_RATE*5;  // Output for roughly 5 seconds.
-
-      // On each pass main loop fills the available free
-      // space in the audio buffer.  Main loop creates audio
-      // samples for sine wave, runs until we tell the
-      // thread to exit.  Each sample is spaced
-      // 1/SAMPLING_RATE apart in time.
-      while (ctSamplesTotal>0) {
-          // Fraction of cycle between samples
-          double fCycleInc = fFreq/SAMPLING_RATE;  
-
-          // Discard samples from previous pass
-          cBuf.clear();
-
-      	  // Figure out how many samples we can add
-          int ctSamplesThisPass = line.available()/SAMPLE_SIZE;   
-          for (int i=0; i < ctSamplesThisPass; i++) {
-              cBuf.putShort((short)
-                (Short.MAX_VALUE * Math.sin(2*Math.PI * fCyclePosition))
-              );
-
-              fCyclePosition += fCycleInc;
-              if (fCyclePosition > 1)
-                  fCyclePosition -= 1;
-          }
-
-          //Write sine samples to the line buffer.  If the
-          // audio buffer is full, this will block until
-          // there is room. (We never write more samples than
-          // buffer will hold).
-          line.write(cBuf.array(), 0, cBuf.position());
-
-          // Update total number of samples written.
-          ctSamplesTotal -= ctSamplesThisPass;     
-
-          // Wait until the buffer is at least half empty
-          // before we add more.
-          while (line.getBufferSize()/2 < line.available())   
-              Thread.sleep(1);                                             
-      }
-
-
-      // Done playing the whole waveform, now wait until the
-      // queued samples finish playing, then clean up and
-      // exit.
-      line.drain();                                         
-      line.close();
-   }
+        // Write the samples and finish.
+        File wavfile = new File(args[0]);
+        AudioSystem.write(aBuf, AudioFileFormat.Type.WAVE, wavfile);
+    }
 }
