@@ -15,6 +15,12 @@ Bart Massey 2020-04-07
   (You could also set your classpath for compilation with
   the `-cp` option for `javac`.)
 
+  *WARNING:* If you compile without your classpath set, your
+  code will compile but you will get a version of
+  `javax.sound` that doesn't actually use PulseAudio but
+  uses a null stream instead. Don't waste your life
+  debugging this as I did.
+
 * Make sure the native libraries can be loaded.
 
     * Oracle Java: set your `LD_LIBRARY_PATH`
@@ -58,5 +64,5 @@ Bart Massey 2020-04-07
 ## Acknowledgments
 
 Thanks to the authors of Tritonus and the Java PulseAudio
-bindings. Thanks to WolinLabs for the nice sine wave demo.
+bindings. Thanks to WolinLabs for the sine wave demo.
 Thanks to ProgramCreek for the WAVE writer demo.
