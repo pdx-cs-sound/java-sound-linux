@@ -46,7 +46,14 @@ Bart Massey 2020-04-07
         javac playsine.java
         java playsine
 
+
+  A sine wave file writer demo is also here.
+
+        javac writesine.java
+        java writesine sine.wav
+
 ## Acknowledgments
 
 Thanks to the authors of Tritonus and the Java PulseAudio
 bindings. Thanks to WolinLabs for the nice sine wave demo.
+Thanks to ProgramCreek for the WAVE writer demo.
